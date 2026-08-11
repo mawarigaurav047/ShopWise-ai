@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+model Category {
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  name         String
+  icon         String
+  description  String
+  image        String
+  productCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[]
+}
+
+model Product {
+  id              String    @id @default(cuid())
+  name            String
+  brand           String
+  categorySlug    String
+  price           Float
+  originalPrice   Float
+  discount        Int       @default(0)
+  rating          Float     @default(0)
+  reviewCount     Int       @default(0)
+  image           String
+  images          Json      // Array of image URLs: string[]
+  description     String
+  specs           Json      // Array of ProductSpec: { label: string, value: string }[]
+  aiMatch         Json      // AIMatchMetadata: { score, whyMatches, keyStrengths, potentialDrawback, efficiencyBadge, targetUser }
+  stock           Int       @default(0)
+  inStock         Boolean   @default(true)
+  isTrending      Boolean   @default(false)
+  isFeatured      Boolean   @default(false)
+  isDeal          Boolean   @default(false)
+  tags            Json?     // Array of tags: string[]
+  features        Json?     // Array of feature bullets: string[]
+  specifications  Json?     // Key-value specifications map: Record<string, string>
+  warranty        String?
+  seller          String?
+  pros            Json?     // Array of pros: string[]
+  cons            Json?     // Array of cons: string[]
+  aiReviewSummary Json?     // Review summary: { praise: string[], complaints: string[], verdict: string }
+  embedding       Unsupported("vector(768)")?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  category      Category       @relation(fields: [categorySlug], references: [slug], onDelete: Cascade)
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+
+  @@index([categorySlug])
+  @@index([brand])
+  @@index([price])
+  @@index([rating])
+}
+
+// ── User, Cart & Wishlist Models (Clerk Integration) ────────────────────────
+
+model User {
+  id            String         @id // Stores Clerk User ID (e.g., user_2...)
+  name          String?
+  email         String?        @unique
+  image         String?
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
