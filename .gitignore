@@ -43,3 +43,5 @@ next-env.d.ts
 # Environment variables
 .env
 .env*.local
+# clerk configuration (can include secrets)
+/.clerk/
