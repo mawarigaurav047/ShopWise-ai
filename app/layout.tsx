@@ -3,8 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ShopProvider } from '../context/ShopContext';
-import Navbar from '../components/layout/Navbar';
-import { Footer } from '../components/layout/Footer';
+import { SiteChrome } from '../components/layout/SiteChrome';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -23,9 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="en" className={`${inter.variable} scroll-smooth`}>
         <body className="font-sans bg-zinc-50 text-zinc-900 antialiased min-h-screen flex flex-col">
           <ShopProvider>
-            <Navbar />
-            <main className="flex-1 min-h-screen">{children}</main>
-            <Footer />
+            <SiteChrome>{children}</SiteChrome>
           </ShopProvider>
         </body>
       </html>
